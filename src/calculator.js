@@ -6,6 +6,9 @@
  * - subtraction
  * - multiplication
  * - division
+ * - modulo
+ * - exponentiation
+ * - square root
  */
 
 function add(a, b) {
@@ -26,6 +29,26 @@ function divide(a, b) {
   }
 
   return a / b;
+}
+
+function modulo(a, b) {
+  if (b === 0) {
+    throw new Error('Modulo by zero is not allowed.');
+  }
+
+  return a % b;
+}
+
+function power(base, exponent) {
+  return base ** exponent;
+}
+
+function squareRoot(n) {
+  if (n < 0) {
+    throw new Error('Square root of a negative number is not allowed.');
+  }
+
+  return Math.sqrt(n);
 }
 
 function parseNumber(value, name) {
@@ -54,30 +77,46 @@ function calculate(operation, left, right) {
     case 'divide':
     case '/':
       return divide(left, right);
+    case 'modulo':
+    case 'mod':
+    case '%':
+      return modulo(left, right);
+    case 'power':
+    case '^':
+      return power(left, right);
+    case 'squareRoot':
+    case 'sqrt':
+      return squareRoot(left);
     default:
       throw new Error(
-        `Unsupported operation "${operation}". Use add, subtract, multiply, or divide.`
+        `Unsupported operation "${operation}". Use add, subtract, multiply, divide, modulo, power, or squareRoot.`
       );
   }
 }
 
 function printUsage() {
-  console.log('Usage: node src/calculator.js <operation> <left> <right>');
-  console.log('Operations: add, subtract, multiply, divide');
-  console.log('Aliases: +, -, *, x, X, /');
+  console.log('Usage: node src/calculator.js <operation> <left> [right]');
+  console.log('Operations: add, subtract, multiply, divide, modulo, power, squareRoot');
+  console.log('Aliases: +, -, *, x, X, /, %, ^, sqrt');
 }
 
 function main(argv) {
   const [operation, leftValue, rightValue] = argv.slice(2);
+  const unaryOperations = new Set(['squareRoot', 'sqrt']);
 
-  if (!operation || leftValue === undefined || rightValue === undefined) {
+  if (
+    !operation ||
+    leftValue === undefined ||
+    (!unaryOperations.has(operation) && rightValue === undefined)
+  ) {
     printUsage();
     return;
   }
 
   const left = parseNumber(leftValue, 'left operand');
-  const right = parseNumber(rightValue, 'right operand');
-  const result = calculate(operation, left, right);
+  const result = unaryOperations.has(operation)
+    ? calculate(operation, left)
+    : calculate(operation, left, parseNumber(rightValue, 'right operand'));
 
   console.log(result);
 }
@@ -96,6 +135,9 @@ module.exports = {
   subtract,
   multiply,
   divide,
+  modulo,
+  power,
+  squareRoot,
   calculate,
   parseNumber,
   main,
